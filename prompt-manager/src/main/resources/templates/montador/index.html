@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Montador</title>
+	<style>
+		body { font-family: system-ui, sans-serif; margin: 2rem; }
+		form > * { display: block; margin: .5rem 0; }
+		select[multiple] { min-width: 320px; min-height: 120px; }
+		.preview { border-top: 1px solid #ccc; margin-top: 1.5rem; padding-top: 1rem; }
+		.badge { color: #b30000; font-weight: 600; }
+	</style>
+</head>
+<body>
+	<h1>Montador</h1>
+
+	<section>
+		<p th:text="'Templates: ' + ${#lists.size(templates)}">Templates: 0</p>
+		<p th:text="'Contextos: ' + ${#lists.size(contexts)}">Contextos: 0</p>
+		<p th:text="'Estilos: ' + ${#lists.size(styles)}">Estilos: 0</p>
+	</section>
+
+	<form th:action="@{/montador/preview}" th:object="${req}" method="post">
+		<label for="template">Template</label>
+		<select id="template" th:field="*{templateId}" required>
+			<option value="" disabled selected>-- Selecciona un template --</option>
+			<option th:each="t : ${templates}" th:value="${t.id}" th:text="${t.name}">Template</option>
+		</select>
+
+		<label for="contexts">Contextos (multi-selección)</label>
+		<select id="contexts" th:field="*{contextIds}" multiple>
+			<option th:each="c : ${contexts}" th:value="${c.id}" th:text="${c.name}">Contexto</option>
+		</select>
+
+		<label for="style">Estilo (opcional)</label>
+		<select id="style" th:field="*{styleId}">
+			<option value="">(Sin estilo)</option>
+			<option th:each="s : ${styles}" th:value="${s.id}" th:text="${s.name}">Estilo</option>
+		</select>
+
+		<label for="extras">Extras (Markdown opcional)</label>
+		<textarea id="extras" th:field="*{extrasMarkdown}" rows="4" placeholder="Markdown adicional..."></textarea>
+
+		<fieldset>
+			<legend>Variables Mustache (ejemplos)</legend>
+			<input type="text" name="variables['title']" placeholder="variables['title']" />
+			<input type="text" name="variables['audience']" placeholder="variables['audience']" />
+		</fieldset>
+
+		<button type="submit">Previsualizar</button>
+	</form>
+
+	<section class="preview" th:if="${renderedHtml}">
+		<h2>Previsualización</h2>
+		<p th:if="${sensitive}" class="badge">Atención: contiene contexto sensible</p>
+
+		<details>
+			<summary>Ver Markdown</summary>
+			<pre th:text="${renderedMd}">...</pre>
+		</details>
+
+		<h3>HTML</h3>
+		<div th:utext="${renderedHtml}"></div>
+	</section>
+</body>
+</html>
